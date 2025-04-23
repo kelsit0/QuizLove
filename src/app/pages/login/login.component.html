@@ -1,1 +1,33 @@
-<p>login works!</p>
+<div class="login_container">
+
+    <h1>Inicio de Sesion</h1>
+    <form class="login_form ">
+        <div class="form_group">
+            
+            <label for="email" class="label_login">Correo</label>
+            <input type="email"
+                    class="input_login"
+                    id="email"
+                    placeholder="tucorreo@gmail.com"
+                    required
+                    name="email"
+                    [(ngModel)]="email"
+                    >
+        </div>
+        <div class="form_group">
+            
+            <label for="password" class="label_login">Contraseña</label>
+            <input type="password"
+                    class="input_login"
+                    id="password"
+                    placeholder="......"
+                    required
+                    name="password"
+                    [(ngModel)]="password"
+                    >
+        </div>
+        <button type="submit" class="submit-btn" (click)="submit()" >Enviar</button>
+    </form>
+
+</div>
+
