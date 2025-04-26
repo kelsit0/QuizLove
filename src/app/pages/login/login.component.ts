@@ -1,28 +1,37 @@
-import { Component, input } from '@angular/core';
-import { FormsModule } from '@angular/forms'; // <-- Añade esta línea
+import { Component, signal } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
     FormsModule,
+    ReactiveFormsModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
 ///aca aplica binding
-export class LoginComponent {
+export default class LoginComponent {
+
+
+  loginForm: FormGroup;
+
 
   ///unidireccional binding 
-  email:string ='';
-  password:string ='';
-
-  constructor(private router: Router){
-    
+  constructor(private router: Router, private fb:FormBuilder){
+    this.loginForm=this.fb.group({
+      email:['',[Validators.required,Validators.email]],
+      password:['', Validators.required]
+    });
   }
   submit():void{
-    console.log("credenciales", this.email, this.password)
-    this.router.navigate(['/home'])
+    if(this.loginForm.valid){
+      const {email,password}= this.loginForm.value;
+      console.log('Login Data', email, password);
+      this.router.navigate(['/home'])
+    }
   }
 }
