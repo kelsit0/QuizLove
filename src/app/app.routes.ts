@@ -10,5 +10,12 @@ export const routes: Routes = [
         path:'home',
         loadComponent:()=>import('./pages/home/home.component')
     },
-    
+    {
+        path:'create-test',
+        loadComponent:()=>import('./pages/create-test/create-test.component')
+    },
+    {
+        path:'answer-test',
+        loadComponent:()=>import('./pages/answer-test/answer-test.component')
+    }
 ];

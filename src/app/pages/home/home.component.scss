@@ -1,0 +1,22 @@
+.home_container{
+    font-size: large;
+    justify-items: center;
+    
+}
+
+.option_container{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.card_button{
+    all:unset;
+    text-align: center;
+    background-color: rgb(255, 231, 235);
+    border-radius: 10px;
+    width: 200px;
+    height: 100px;
+    cursor: pointer; 
+    transition: background-color 0.3s;
+}

@@ -1,28 +1,31 @@
-<div class="login_container">
-    <h1>Inicio de Sesion</h1>
-    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login_form ">
-        <div class="form_group" >
-            <label for="email" class="label_login">Correo</label>
-            <input type="email"
-                    class="input_login"
-                    id="email"
-                    placeholder="tucorreo@gmail.com"
-                    formControlName="email"
-                    required
-                    >
-        </div>
-        <div class="form_group">
-            <label for="password" class="label_login">Contraseña</label>
-            <input type="password"
-                    class="input_login"
-                    id="password"
-                    placeholder="......"
-                    formControlName="password"
-                    required
-                    >
-        </div>
-        <button type="submit" class="submit-btn" >Enviar</button>
-    </form>
-
+<div class="main">
+    <div class="login_container">
+        <h1>Inicio de Sesion</h1>
+        <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login_form ">
+            <div class="form_group" >
+                <label for="email" class="label_login">Correo</label>
+                <input type="email"
+                        class="input_login"
+                        id="email"
+                        placeholder="tucorreo@gmail.com"
+                        formControlName="email"
+                        required
+                        >
+            </div>
+            <div class="form_group">
+                <label for="password" class="label_login">Contraseña</label>
+                <input type="password"
+                        class="input_login"
+                        id="password"
+                        placeholder="......"
+                        formControlName="password"
+                        required
+                        >
+            </div>
+            <button type="submit" class="submit-btn" >Enviar</button>
+        </form>
+    
+    </div>
+    
+    
 </div>
-
