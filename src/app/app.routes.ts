@@ -8,11 +8,11 @@ export const routes: Routes = [
     },
     {
         path:'home',
-        loadComponent:()=>import('./pages/home/home.component')
+        loadComponent:()=>import('./pages/home/home.component').then(c => c.HomeComponent)
     },
     {
         path:'create-test',
-        loadComponent:()=>import('./pages/create-test/create-test.component')
+        loadComponent:()=>import('./pages/create-test/create-test.component').then(m => m.CreateTestComponent)
     },
     {
         path:'answer-test',

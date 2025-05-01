@@ -1,1 +1,28 @@
-<p>create-test works!</p>
+<div class="create_test">
+    <p>Ingresa tus preguntas</p>
+
+    <form (ngSubmit)="guardarPregunta()" #formulario="ngForm">
+        <label for="pregunta">Pregunta:</label><br>
+        <input type="text" id="pregunta" name="pregunta" [(ngModel)]="nuevaPregunta.pregunta" required/>
+        <br><br>
+
+        <label for="respuesta">Respuesta correcta:</label><br />
+        <input type="text" id="respuesta" name="respuesta" [(ngModel)]="nuevaPregunta.respuesta" required/>
+        <br><br>
+        <button type="submit">Guardar pregunta</button>
+        <br><br>
+        <button type="button" (click)="verPreguntas()">Ver preguntas</button>
+        <br><br>
+        <button type="button" (click)="noVerPreguntas()">Dejar de Ver Preguntas</button>
+
+    </form>
+
+</div>
+
+<div  class="preguntas">
+    <ul *ngIf="mostrarListado">
+        <li *ngFor="let pregunta of preguntas; let i = index">
+            {{ i + 1 }}. {{ pregunta.pregunta }} (Respuesta: {{ pregunta.respuesta }})
+        </li>
+    </ul>
+</div>

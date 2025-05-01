@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export default class HomeComponent {
+export class HomeComponent {
 
   constructor(private route:Router){
 
