@@ -1,31 +1,66 @@
-<div class="main">
-    <div class="login_container">
-        <h1>Inicio de Sesion</h1>
-        <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login_form ">
-            <div class="form_group" >
-                <label for="email" class="label_login">Correo</label>
-                <input type="email"
-                        class="input_login"
-                        id="email"
-                        placeholder="tucorreo@gmail.com"
-                        formControlName="email"
-                        required
-                        >
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>💕 LoveQuiz 💕</h1>
+            <p>Conecta con tu pareja a través de preguntas especiales</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login-form">
+            <div class="form-group">
+                <label for="email">
+                    <span class="emoji">✉️</span> Correo Electrónico
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    formControlName="email"
+                    placeholder="tu@email.com"
+                    [class.invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+                >
+                <div class="error-message" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+                    <span *ngIf="loginForm.get('email')?.errors?.['required']">El correo es requerido</span>
+                    <span *ngIf="loginForm.get('email')?.errors?.['email']">Ingresa un correo válido</span>
+                </div>
             </div>
-            <div class="form_group">
-                <label for="password" class="label_login">Contraseña</label>
-                <input type="password"
-                        class="input_login"
-                        id="password"
-                        placeholder="......"
+
+            <div class="form-group">
+                <label for="password">
+                    <span class="emoji">🔒</span> Contraseña
+                </label>
+                <div class="password-input">
+                    <input 
+                        [type]="showPassword ? 'text' : 'password'" 
+                        id="password" 
                         formControlName="password"
-                        required
-                        >
+                        placeholder="Tu contraseña"
+                        [class.invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                    >
+                    <button type="button" class="toggle-password" (click)="togglePassword()">
+                        <span class="emoji">{{ showPassword ? '👁️' : '👁️‍🗨️' }}</span>
+                    </button>
+                </div>
+                <div class="error-message" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+                    <span *ngIf="loginForm.get('password')?.errors?.['required']">La contraseña es requerida</span>
+                </div>
             </div>
-            <button type="submit" class="submit-btn" >Enviar</button>
+
+            <div class="form-actions">
+                <button type="submit" class="login-btn" [disabled]="loginForm.invalid">
+                    <span class="emoji">💝</span> Iniciar Sesión
+                </button>
+                
+                <div class="divider">
+                    <span>o</span>
+                </div>
+
+                <button type="button" class="register-btn">
+                    <span class="emoji">✨</span> Crear Cuenta
+                </button>
+            </div>
         </form>
-    
+
+        <div class="login-footer">
+            <p>¿Olvidaste tu contraseña? <a href="#">Recupérala aquí</a></p>
+        </div>
     </div>
-    
-    
 </div>

@@ -1,1 +1,126 @@
-<p>answer-test works!</p>
+<div class="answer-test">
+    <div class="header">
+        <h1>💕 Quiz de Amor 💕</h1>
+        <p>Responde las preguntas de tu pareja</p>
+    </div>
+
+    <!-- Búsqueda de Quiz -->
+    <div class="search-section" *ngIf="!quiz && !isLoading">
+        <div class="search-card">
+            <h2>🔍 Encuentra tu Quiz</h2>
+            <p>Ingresa el código que te compartió tu pareja</p>
+            
+            <div class="search-form">
+                <input 
+                    type="text" 
+                    [(ngModel)]="quizId" 
+                    placeholder="Ingresa el código del quiz"
+                    [class.invalid]="error"
+                >
+                <button (click)="searchQuiz(quizId)" [disabled]="!quizId">
+                    <span class="emoji">💝</span> Buscar Quiz
+                </button>
+            </div>
+
+            <div class="error-message" *ngIf="error">
+                {{ error }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <div class="loading-card">
+            <div class="loading-animation">
+                <span class="emoji">💝</span>
+            </div>
+            <p>Cargando tu quiz de amor...</p>
+        </div>
+    </div>
+
+    <!-- Quiz Questions -->
+    <div class="quiz-container" *ngIf="currentQuestion && !showResults && !isLoading">
+        <div class="progress-bar">
+            <div class="progress" [style.width]="progressPercentage + '%'"></div>
+            <span class="progress-text">{{currentQuestionIndex + 1}} de {{totalQuestions}}</span>
+        </div>
+
+        <div class="question-card">
+            <div class="question">
+                <span class="emoji">❓</span>
+                <h2>{{ currentQuestion.pregunta }}</h2>
+            </div>
+
+            <form (ngSubmit)="submitAnswer()" #answerForm="ngForm" class="answer-form">
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        [(ngModel)]="userAnswer" 
+                        name="answer"
+                        placeholder="Escribe tu respuesta aquí..."
+                        required
+                        #answer="ngModel"
+                        [class.invalid]="answer.invalid && answer.touched"
+                    >
+                </div>
+
+                <button type="submit" [disabled]="!answerForm.valid" class="submit-btn">
+                    <span class="emoji">💝</span> Enviar Respuesta
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quiz Results -->
+    <div class="results" *ngIf="showResults && quizResult">
+        <div class="results-card">
+            <h2>💫 ¡Quiz Completado! 💫</h2>
+            
+            <div class="score">
+                <div class="score-circle">
+                    {{ correctAnswers }}/{{ totalQuestions }}
+                </div>
+                <p>¡Respuestas Correctas!</p>
+            </div>
+
+            <div class="answers-review">
+                <h3>Revisión de Respuestas</h3>
+                <div class="answer-item" *ngFor="let answer of quizResult.answers; let i = index">
+                    <div class="answer-header">
+                        <span class="question-number">Pregunta {{i + 1}}</span>
+                        <span class="result-icon" [class.correct]="answer.correct">
+                            {{ answer.correct ? '✅' : '❌' }}
+                        </span>
+                    </div>
+                    <p class="question-text">{{ quiz && quiz.questions[i] ? quiz.questions[i].pregunta : '' }}</p>
+                    <div class="answer-details">
+                        <p class="user-answer">
+                            <strong>Tu respuesta:</strong> 
+                            <span [class.incorrect]="!answer.correct">{{ answer.userAnswer }}</span>
+                        </p>
+                        <p class="correct-answer" *ngIf="!answer.correct">
+                            <strong>Respuesta correcta:</strong> 
+                            <span>{{ answer.correctAnswer }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="message">
+                <p *ngIf="correctAnswers === totalQuestions">
+                    🎉 ¡Perfecto! Conoces muy bien a tu pareja 💑
+                </p>
+                <p *ngIf="correctAnswers >= totalQuestions/2 && correctAnswers < totalQuestions">
+                    💖 ¡Bien hecho! Estás en sintonía con tu pareja
+                </p>
+                <p *ngIf="correctAnswers < totalQuestions/2">
+                    💝 ¡Sigue conociéndose más! El amor crece cada día
+                </p>
+            </div>
+
+            <button (click)="restartQuiz()" class="restart-btn">
+                <span class="emoji">🔄</span> Intentar de Nuevo
+            </button>
+        </div>
+    </div>
+</div>

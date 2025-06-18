@@ -4,7 +4,7 @@ export const routes: Routes = [
         ///a futuro lazy loading components
     {
         path:'',
-        loadComponent:()=>import('./pages/login/login.component')
+        loadComponent:()=>import('./pages/login/login.component').then(m => m.default)
     },
     {
         path:'home',
@@ -16,6 +16,10 @@ export const routes: Routes = [
     },
     {
         path:'answer-test',
-        loadComponent:()=>import('./pages/answer-test/answer-test.component')
+        loadComponent:()=>import('./pages/answer-test/answer-test.component').then(m => m.AnswerTestComponent)
+    },
+    {
+        path:'answer-test/:id',
+        loadComponent:()=>import('./pages/answer-test/answer-test.component').then(m => m.AnswerTestComponent)
     }
 ];

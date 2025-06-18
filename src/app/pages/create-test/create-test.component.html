@@ -1,28 +1,98 @@
 <div class="create_test">
-    <p>Ingresa tus preguntas</p>
+    <div class="header">
+        <h1>💝 Crea tu Quiz de Amor 💝</h1>
+        <p>Prepara preguntas especiales para tu pareja</p>
+    </div>
 
-    <form (ngSubmit)="guardarPregunta()" #formulario="ngForm">
-        <label for="pregunta">Pregunta:</label><br>
-        <input type="text" id="pregunta" name="pregunta" [(ngModel)]="nuevaPregunta.pregunta" required/>
-        <br><br>
+    <form (ngSubmit)="guardarPregunta()" #formulario="ngForm" class="love-form" *ngIf="!quizCreated">
+        <div class="form-group">
+            <label for="pregunta">
+                <span class="emoji">❓</span> Tu Pregunta:
+            </label>
+            <input 
+                type="text" 
+                id="pregunta" 
+                name="pregunta" 
+                [(ngModel)]="nuevaPregunta.pregunta" 
+                placeholder="Ej: ¿Cuál es mi comida favorita?"
+                required
+            />
+        </div>
 
-        <label for="respuesta">Respuesta correcta:</label><br />
-        <input type="text" id="respuesta" name="respuesta" [(ngModel)]="nuevaPregunta.respuesta" required/>
-        <br><br>
-        <button type="submit">Guardar pregunta</button>
-        <br><br>
-        <button type="button" (click)="verPreguntas()">Ver preguntas</button>
-        <br><br>
-        <button type="button" (click)="noVerPreguntas()">Dejar de Ver Preguntas</button>
+        <div class="form-group">
+            <label for="respuesta">
+                <span class="emoji">💫</span> Respuesta Correcta:
+            </label>
+            <input 
+                type="text" 
+                id="respuesta" 
+                name="respuesta" 
+                [(ngModel)]="nuevaPregunta.respuesta" 
+                placeholder="Ej: Pizza"
+                required
+            />
+        </div>
 
+        <div class="buttons-group">
+            <button type="submit" class="primary-btn" [disabled]="!formulario.valid">
+                <span class="emoji">💝</span> Agregar Pregunta
+            </button>
+        </div>
     </form>
 
-</div>
+    <div class="preguntas" *ngIf="mostrarListado && !quizCreated">
+        <div class="questions-header">
+            <h2>💕 Tus Preguntas de Amor 💕</h2>
+            <p>Has creado {{ preguntas.length }} pregunta(s)</p>
+        </div>
+        
+        <ul>
+            <li *ngFor="let pregunta of preguntas; let i = index">
+                <div class="question-content">
+                    <div class="question">
+                        <span class="number">{{ i + 1 }}.</span>
+                        {{ pregunta.pregunta }}
+                    </div>
+                    <div class="answer">Respuesta: {{ pregunta.respuesta }}</div>
+                </div>
+                <div class="actions">
+                    <button class="edit-btn" (click)="editarPregunta(i)">
+                        <span class="emoji">✏️</span>
+                    </button>
+                    <button class="delete-btn" (click)="eliminarPregunta(i)">
+                        <span class="emoji">🗑️</span>
+                    </button>
+                </div>
+            </li>
+        </ul>
 
-<div  class="preguntas">
-    <ul *ngIf="mostrarListado">
-        <li *ngFor="let pregunta of preguntas; let i = index">
-            {{ i + 1 }}. {{ pregunta.pregunta }} (Respuesta: {{ pregunta.respuesta }})
-        </li>
-    </ul>
+        <div class="quiz-actions" *ngIf="preguntas.length > 0">
+            <button class="finish-btn" (click)="finalizarQuiz()">
+                <span class="emoji">✨</span> Finalizar Quiz
+            </button>
+        </div>
+    </div>
+
+    <div class="quiz-created" *ngIf="quizCreated">
+        <div class="success-card">
+            <h2>🎉 ¡Quiz Creado con Éxito! 🎉</h2>
+            <p>Tu quiz de amor está listo para ser compartido con tu pareja.</p>
+            
+            <div class="share-info">
+                <p>Comparte este enlace con tu pareja para que pueda responder el quiz:</p>
+                <div class="share-link">
+                    <span>answer-test/[ID]</span>
+                    <button class="copy-btn">
+                        <span class="emoji">📋</span> Copiar
+                    </button>
+                </div>
+            </div>
+
+            <div class="final-actions">
+                <button class="restart-btn" (click)="reiniciarQuiz()">
+                    <span class="emoji">🔄</span> Crear Nuevo Quiz
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
