@@ -1,106 +1,167 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { Quiz, Question, QuizResult } from '../models/quiz.model';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
+import { Quiz, QuizResult } from '../models/quiz.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class QuizService {
-  private readonly API_URL = 'http://localhost:3000/api'; // Cambiar por tu URL de API
+  private apiUrl = 'http://localhost:5005/api/Quiz';
+  private httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    })
+  };
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Crear un nuevo quiz
-  createQuiz(questions: Question[]): Observable<Quiz> {
-    const quiz: Partial<Quiz> = {
-      createdBy: 'user123', // TODO: Obtener del servicio de autenticación
-      createdAt: new Date(),
-      questions
+  getQuizzes(): Observable<Quiz[]> {
+    return this.http.get<Quiz[]>(this.apiUrl)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  getQuizById(id: string): Observable<Quiz> {
+    return this.http.get<Quiz>(`${this.apiUrl}/${id}`, this.httpOptions)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  createQuiz(quiz: Quiz): Observable<Quiz> {
+    // Validar que el quiz tenga al menos una pregunta
+    if (!quiz.questions || quiz.questions.length === 0) {
+      return throwError(() => new Error('El quiz debe tener al menos una pregunta'));
+    }
+
+    // Validar cada pregunta
+    for (const question of quiz.questions) {
+      if (!question.answers || question.answers.length < 2) {
+        return throwError(() => new Error('Cada pregunta debe tener al menos 2 respuestas'));
+      }
+
+      const correctAnswers = question.answers.filter(a => a.isCorrect).length;
+      if (correctAnswers !== 1) {
+        return throwError(() => new Error('Cada pregunta debe tener exactamente una respuesta correcta'));
+      }
+    }
+
+    // Crear una copia limpia del quiz sin referencias circulares
+    const cleanQuiz = {
+      title: quiz.title?.trim() || '',
+      description: quiz.description?.trim() || '',
+      creatorId: quiz.creatorId || 'user',
+      createdAt: new Date().toISOString(),
+      questions: quiz.questions.map(q => ({
+        text: q.text?.trim() || '',
+        answers: q.answers.map(a => ({
+          text: a.text?.trim() || '',
+          isCorrect: a.isCorrect
+        }))
+      }))
     };
 
-    return this.http.post<Quiz>(`${this.API_URL}/quizzes`, quiz).pipe(
-      catchError(error => {
-        console.error('Error creating quiz:', error);
-        // Por ahora, simularemos la respuesta
-        return of({
-          id: Math.random().toString(36).substring(2, 15),
-          createdBy: quiz.createdBy!,
-          createdAt: quiz.createdAt!,
-          questions: quiz.questions!
-        });
-      })
+    // Validar campos requeridos
+    if (!cleanQuiz.title) {
+      return throwError(() => new Error('El título es requerido'));
+    }
+    if (!cleanQuiz.description) {
+      return throwError(() => new Error('La descripción es requerida'));
+    }
+
+    // Validar que no haya campos vacíos en las preguntas y respuestas
+    const hasEmptyFields = cleanQuiz.questions.some(q => 
+      !q.text || q.answers.some(a => !a.text)
+    );
+    if (hasEmptyFields) {
+      return throwError(() => new Error('Todos los campos de preguntas y respuestas son requeridos'));
+    }
+
+    // Log para depuración
+    console.log('Datos enviados al backend:', JSON.stringify(cleanQuiz, null, 2));
+
+    // Asegurarnos de que el objeto cumple con el modelo del backend
+    const requestBody = {
+      title: cleanQuiz.title,
+      description: cleanQuiz.description,
+      creatorId: cleanQuiz.creatorId,
+      createdAt: cleanQuiz.createdAt,
+      questions: cleanQuiz.questions.map(q => ({
+        text: q.text,
+        answers: q.answers.map(a => ({
+          text: a.text,
+          isCorrect: a.isCorrect
+        }))
+      }))
+    };
+
+    return this.http.post<Quiz>(this.apiUrl, requestBody, {
+      ...this.httpOptions,
+      headers: this.httpOptions.headers.set('Accept', 'application/json')
+    }).pipe(
+      catchError(this.handleError)
     );
   }
 
-  // Obtener un quiz por ID
-  getQuizById(id: string): Observable<Quiz | null> {
-    return this.http.get<Quiz>(`${this.API_URL}/quizzes/${id}`).pipe(
-      catchError(error => {
-        console.error('Error fetching quiz:', error);
-        // Por ahora, intentamos obtener del localStorage
-        const storedQuiz = localStorage.getItem(`quiz_${id}`);
-        if (storedQuiz) {
-          const questions = JSON.parse(storedQuiz);
-          const quiz: Quiz = {
-            id,
-            createdBy: 'user123',
-            createdAt: new Date(),
-            questions
-          };
-          return of(quiz);
-        }
-        return of(null);
-      })
-    );
+  updateQuiz(quiz: Quiz): Observable<Quiz> {
+    return this.http.put<Quiz>(`${this.apiUrl}/${quiz.id}`, quiz)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
-  // Enviar respuestas del quiz
-  submitQuizAnswers(quizId: string, answers: { pregunta: string; respuesta: string }[]): Observable<QuizResult> {
-    return this.http.post<QuizResult>(`${this.API_URL}/quizzes/${quizId}/submit`, { answers }).pipe(
-      catchError(error => {
-        console.error('Error submitting answers:', error);
-        // Por ahora, simularemos la validación
-        return this.getQuizById(quizId).pipe(
-          map(quiz => {
-            if (!quiz) throw new Error('Quiz not found');
-            
-            const results = answers.map((answer, index) => {
-              const question = quiz.questions[index];
-              return {
-                correct: answer.respuesta.toLowerCase().trim() === question.respuesta.toLowerCase().trim(),
-                userAnswer: answer.respuesta,
-                correctAnswer: question.respuesta
-              };
-            });
-
-            const score = (results.filter(r => r.correct).length / results.length) * 100;
-
-            return {
-              quizId,
-              answers: results,
-              score,
-              completedAt: new Date()
-            };
-          })
-        );
-      })
-    );
+  deleteQuiz(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
-  // Obtener todos los quizzes de un usuario
+  submitQuizAnswers(quizId: string, answers: { questionId: number; answerId: number }[]): Observable<QuizResult> {
+    return this.http.post<QuizResult>(`${this.apiUrl}/${quizId}/submit`, { answers }, this.httpOptions)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
   getUserQuizzes(): Observable<Quiz[]> {
-    return this.http.get<Quiz[]>(`${this.API_URL}/users/quizzes`).pipe(
-      catchError(error => {
-        console.error('Error fetching user quizzes:', error);
-        return of([]); // Por ahora retornamos array vacío
-      })
-    );
+    return this.http.get<Quiz[]>(`${this.apiUrl}/user`, this.httpOptions)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
-  // Buscar un quiz por ID (versión simplificada para la búsqueda directa)
-  searchQuizById(id: string): Observable<Quiz | null> {
-    return this.getQuizById(id);
+  private handleError(error: HttpErrorResponse) {
+    console.log('Error completo:', error);
+    let errorMessage = 'Ha ocurrido un error';
+
+    if (error.error instanceof ErrorEvent) {
+      // Error del lado del cliente
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      // Error del lado del servidor
+      if (error.error?.errors) {
+        const errorMessages = [];
+        for (const key in error.error.errors) {
+          if (error.error.errors[key]) {
+            errorMessages.push(error.error.errors[key][0]);
+          }
+        }
+        if (errorMessages.length > 0) {
+          errorMessage = errorMessages.join('\n');
+        }
+      } else if (error.error?.message) {
+        errorMessage = error.error.message;
+      } else if (typeof error.error === 'string') {
+        errorMessage = error.error;
+      } else {
+        errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+      }
+    }
+
+    console.error(errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 } 

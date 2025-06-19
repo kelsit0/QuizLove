@@ -48,26 +48,25 @@
         <div class="question-card">
             <div class="question">
                 <span class="emoji">❓</span>
-                <h2>{{ currentQuestion.pregunta }}</h2>
+                <h2>{{ currentQuestion.text }}</h2>
             </div>
 
-            <form (ngSubmit)="submitAnswer()" #answerForm="ngForm" class="answer-form">
-                <div class="form-group">
+            <div class="answers-list">
+                <div *ngFor="let answer of currentQuestion.answers; let i = index" class="answer-option">
                     <input 
-                        type="text" 
-                        [(ngModel)]="userAnswer" 
+                        type="radio" 
+                        [id]="'answer_' + (answer.id || i)" 
+                        [value]="answer.id || i" 
+                        [(ngModel)]="selectedAnswerId" 
                         name="answer"
-                        placeholder="Escribe tu respuesta aquí..."
-                        required
-                        #answer="ngModel"
-                        [class.invalid]="answer.invalid && answer.touched"
                     >
+                    <label [for]="'answer_' + (answer.id || i)">{{ answer.text }}</label>
                 </div>
+            </div>
 
-                <button type="submit" [disabled]="!answerForm.valid" class="submit-btn">
-                    <span class="emoji">💝</span> Enviar Respuesta
-                </button>
-            </form>
+            <button (click)="submitAnswer()" [disabled]="selectedAnswerId === null" class="submit-btn">
+                <span class="emoji">💝</span> Enviar Respuesta
+            </button>
         </div>
     </div>
 
@@ -78,7 +77,7 @@
             
             <div class="score">
                 <div class="score-circle">
-                    {{ correctAnswers }}/{{ totalQuestions }}
+                    {{ quizResult.correctAnswers }}/{{ quizResult.totalQuestions }}
                 </div>
                 <p>¡Respuestas Correctas!</p>
             </div>
@@ -88,32 +87,34 @@
                 <div class="answer-item" *ngFor="let answer of quizResult.answers; let i = index">
                     <div class="answer-header">
                         <span class="question-number">Pregunta {{i + 1}}</span>
-                        <span class="result-icon" [class.correct]="answer.correct">
-                            {{ answer.correct ? '✅' : '❌' }}
+                        <span class="result-icon" [class.correct]="answer.isCorrect">
+                            {{ answer.isCorrect ? '✅' : '❌' }}
                         </span>
                     </div>
-                    <p class="question-text">{{ quiz && quiz.questions[i] ? quiz.questions[i].pregunta : '' }}</p>
+                    <p class="question-text">{{ quiz && quiz.questions[i] ? quiz.questions[i].text : '' }}</p>
                     <div class="answer-details">
                         <p class="user-answer">
                             <strong>Tu respuesta:</strong> 
-                            <span [class.incorrect]="!answer.correct">{{ answer.userAnswer }}</span>
+                            <span [class.incorrect]="!answer.isCorrect">
+                                {{ getAnswerText(i, answer.answerId) }}
+                            </span>
                         </p>
-                        <p class="correct-answer" *ngIf="!answer.correct">
+                        <p class="correct-answer" *ngIf="!answer.isCorrect">
                             <strong>Respuesta correcta:</strong> 
-                            <span>{{ answer.correctAnswer }}</span>
+                            <span>{{ getCorrectAnswerText(i) }}</span>
                         </p>
                     </div>
                 </div>
             </div>
 
             <div class="message">
-                <p *ngIf="correctAnswers === totalQuestions">
+                <p *ngIf="quizResult.correctAnswers === quizResult.totalQuestions">
                     🎉 ¡Perfecto! Conoces muy bien a tu pareja 💑
                 </p>
-                <p *ngIf="correctAnswers >= totalQuestions/2 && correctAnswers < totalQuestions">
+                <p *ngIf="quizResult.correctAnswers >= quizResult.totalQuestions/2 && quizResult.correctAnswers < quizResult.totalQuestions">
                     💖 ¡Bien hecho! Estás en sintonía con tu pareja
                 </p>
-                <p *ngIf="correctAnswers < totalQuestions/2">
+                <p *ngIf="quizResult.correctAnswers < quizResult.totalQuestions/2">
                     💝 ¡Sigue conociéndose más! El amor crece cada día
                 </p>
             </div>

@@ -1,26 +1,38 @@
+export interface Answer {
+    id?: number;
+    questionId?: number;
+    text: string;
+    isCorrect: boolean;
+}
+
 export interface Question {
-    id?: string;
-    pregunta: string;
-    respuesta: string;
+    id?: number;
+    quizId?: number;
+    text: string;
+    answers: Answer[];
 }
 
 export interface Quiz {
-    id: string;
-    title?: string;
-    createdBy: string;
+    id?: number;
+    title: string;
+    description: string;
+    creatorId: string;
     createdAt: Date;
     questions: Question[];
 }
 
-export interface QuizResponse {
-    correct: boolean;
-    userAnswer: string;
-    correctAnswer: string;
+export interface QuizResult {
+    correctAnswers: number;
+    totalQuestions: number;
+    answers: {
+        questionId: number;
+        answerId: number;
+        isCorrect: boolean;
+    }[];
 }
 
-export interface QuizResult {
-    quizId: string;
-    answers: QuizResponse[];
-    score: number;
-    completedAt: Date;
+export interface QuizResponse {
+    questionId: number;
+    answerId: number;
+    isCorrect: boolean;
 } 
