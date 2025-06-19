@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
-import { Quiz, Question, QuizResult } from '../../models/quiz.model';
+import { Quiz, Question, QuizResult, Answer } from '../../models/quiz.model';
 
 @Component({
   selector: 'app-answer-test',
@@ -18,13 +18,13 @@ export class AnswerTestComponent implements OnInit {
   currentQuestionIndex: number = 0;
   totalQuestions: number = 0;
   progressPercentage: number = 0;
-  userAnswer: string = '';
+  selectedAnswerId: number | null = null;
   showResults: boolean = false;
   correctAnswers: number = 0;
   quizId: string = '';
   isLoading: boolean = true;
   error: string = '';
-  userAnswers: { pregunta: string; respuesta: string }[] = [];
+  userAnswers: { questionId: number; answerId: number }[] = [];
   quizResult: QuizResult | null = null;
 
   constructor(
@@ -34,7 +34,6 @@ export class AnswerTestComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Obtener el ID del quiz de la URL
     this.route.params.subscribe(params => {
       const id = params['id'];
       if (id) {
@@ -50,13 +49,9 @@ export class AnswerTestComponent implements OnInit {
     this.error = '';
     this.quizService.getQuizById(id).subscribe({
       next: (quiz) => {
-        if (quiz) {
-          this.quiz = quiz;
-          this.totalQuestions = quiz.questions.length;
-          this.startQuiz();
-        } else {
-          this.error = 'No se encontró el quiz especificado';
-        }
+        this.quiz = quiz;
+        this.totalQuestions = quiz.questions.length;
+        this.startQuiz();
         this.isLoading = false;
       },
       error: (error) => {
@@ -79,17 +74,17 @@ export class AnswerTestComponent implements OnInit {
     if (this.quiz && this.currentQuestionIndex < this.quiz.questions.length) {
       this.currentQuestion = this.quiz.questions[this.currentQuestionIndex];
       this.progressPercentage = (this.currentQuestionIndex / this.totalQuestions) * 100;
-      this.userAnswer = '';
+      this.selectedAnswerId = null;
     } else {
       this.submitQuiz();
     }
   }
 
   submitAnswer() {
-    if (this.currentQuestion && this.userAnswer.trim()) {
+    if (this.currentQuestion && this.selectedAnswerId !== null) {
       this.userAnswers.push({
-        pregunta: this.currentQuestion.pregunta,
-        respuesta: this.userAnswer.trim()
+        questionId: this.currentQuestion.id || this.currentQuestionIndex,
+        answerId: this.selectedAnswerId
       });
       
       this.currentQuestionIndex++;
@@ -100,10 +95,10 @@ export class AnswerTestComponent implements OnInit {
   submitQuiz() {
     if (this.quiz && this.userAnswers.length === this.quiz.questions.length) {
       this.isLoading = true;
-      this.quizService.submitQuizAnswers(this.quiz.id, this.userAnswers).subscribe({
+      this.quizService.submitQuizAnswers(this.quiz.id!.toString(), this.userAnswers).subscribe({
         next: (result) => {
           this.quizResult = result;
-          this.correctAnswers = result.answers.filter(a => a.correct).length;
+          this.correctAnswers = result.correctAnswers;
           this.showResults = true;
           this.isLoading = false;
         },
@@ -114,6 +109,22 @@ export class AnswerTestComponent implements OnInit {
         }
       });
     }
+  }
+
+  getAnswerText(questionIndex: number, answerId: number | undefined): string {
+    if (!this.quiz || !answerId) return 'No disponible';
+    const question = this.quiz.questions[questionIndex];
+    if (!question) return 'No disponible';
+    const answer = question.answers.find(a => a.id === answerId);
+    return answer?.text || 'No disponible';
+  }
+
+  getCorrectAnswerText(questionIndex: number): string {
+    if (!this.quiz) return 'No disponible';
+    const question = this.quiz.questions[questionIndex];
+    if (!question) return 'No disponible';
+    const answer = question.answers.find(a => a.isCorrect);
+    return answer?.text || 'No disponible';
   }
 
   restartQuiz() {

@@ -1,88 +1,152 @@
 <div class="create_test">
     <div class="header">
         <h1>💝 Crea tu Quiz de Amor 💝</h1>
-        <p>Prepara preguntas especiales para tu pareja</p>
+        <p>Prepara preguntas especiales para conocer mejor a tu pareja</p>
     </div>
 
-    <form (ngSubmit)="guardarPregunta()" #formulario="ngForm" class="love-form" *ngIf="!quizCreated">
+    <div class="quiz-info" *ngIf="!quizCreated">
         <div class="form-group">
-            <label for="pregunta">
-                <span class="emoji">❓</span> Tu Pregunta:
+            <label for="title">
+                <span class="emoji">💌</span> Dale un título especial a tu quiz:
             </label>
             <input 
                 type="text" 
-                id="pregunta" 
-                name="pregunta" 
-                [(ngModel)]="nuevaPregunta.pregunta" 
-                placeholder="Ej: ¿Cuál es mi comida favorita?"
+                id="title" 
+                name="title" 
+                [(ngModel)]="quiz.title" 
+                placeholder="Ej: Nuestro Quiz de Amor"
                 required
+                [class.is-invalid]="validationErrors['Title']"
             />
+            <div class="error-message" *ngIf="validationErrors['Title']">
+                {{ validationErrors['Title'] }}
+            </div>
         </div>
 
         <div class="form-group">
-            <label for="respuesta">
-                <span class="emoji">💫</span> Respuesta Correcta:
+            <label for="description">
+                <span class="emoji">💭</span> Escribe un mensaje para tu pareja:
             </label>
-            <input 
-                type="text" 
-                id="respuesta" 
-                name="respuesta" 
-                [(ngModel)]="nuevaPregunta.respuesta" 
-                placeholder="Ej: Pizza"
+            <textarea 
+                id="description" 
+                name="description" 
+                [(ngModel)]="quiz.description" 
+                placeholder="Ej: Quiero conocer más sobre ti y nuestro amor..."
                 required
-            />
+                [class.is-invalid]="validationErrors['Description']"
+            ></textarea>
+            <div class="error-message" *ngIf="validationErrors['Description']">
+                {{ validationErrors['Description'] }}
+            </div>
+        </div>
+    </div>
+
+    <div class="quiz-form" *ngIf="!quizCreated">
+        <div class="quiz-header" *ngIf="!mostrarListado">
+            <h2>Crea tu Quiz de Amor 💝</h2>
         </div>
 
-        <div class="buttons-group">
-            <button type="submit" class="primary-btn" [disabled]="!formulario.valid">
-                <span class="emoji">💝</span> Agregar Pregunta
-            </button>
-        </div>
-    </form>
+        <div class="question-form" *ngIf="!mostrarListado">
+            <h3>Añade una Pregunta 💕</h3>
+            <div class="form-group">
+                <label for="questionText">Pregunta</label>
+                <input 
+                    type="text" 
+                    id="questionText" 
+                    [(ngModel)]="currentQuestion.text" 
+                    placeholder="Escribe tu pregunta..."
+                    [class.is-invalid]="validationErrors['Questions[0].Text']"
+                />
+                <div class="error-message" *ngIf="validationErrors['Questions[0].Text']">
+                    {{ validationErrors['Questions[0].Text'] }}
+                </div>
+            </div>
 
-    <div class="preguntas" *ngIf="mostrarListado && !quizCreated">
-        <div class="questions-header">
-            <h2>💕 Tus Preguntas de Amor 💕</h2>
-            <p>Has creado {{ preguntas.length }} pregunta(s)</p>
-        </div>
-        
-        <ul>
-            <li *ngFor="let pregunta of preguntas; let i = index">
-                <div class="question-content">
-                    <div class="question">
-                        <span class="number">{{ i + 1 }}.</span>
-                        {{ pregunta.pregunta }}
+            <div class="answers-section">
+                <h4>Respuestas 💖</h4>
+                <div class="form-group" *ngFor="let answer of currentQuestion.answers; let i = index">
+                    <div class="answer-input">
+                        <input 
+                            type="radio" 
+                            [id]="'correct' + i" 
+                            [name]="'correct'" 
+                            [checked]="answer.isCorrect" 
+                            (change)="setCorrectAnswer(answer)">
+                        <input 
+                            type="text" 
+                            [id]="'answer' + i" 
+                            [(ngModel)]="answer.text" 
+                            [placeholder]="'Respuesta ' + (i + 1)"
+                            [class.is-invalid]="validationErrors['Questions[0].Answers[' + i + '].Text']">
                     </div>
-                    <div class="answer">Respuesta: {{ pregunta.respuesta }}</div>
+                    <div class="error-message" *ngIf="validationErrors['Questions[0].Answers[' + i + '].Text']">
+                        {{ validationErrors['Questions[0].Answers[' + i + '].Text'] }}
+                    </div>
                 </div>
-                <div class="actions">
-                    <button class="edit-btn" (click)="editarPregunta(i)">
-                        <span class="emoji">✏️</span>
-                    </button>
-                    <button class="delete-btn" (click)="eliminarPregunta(i)">
-                        <span class="emoji">🗑️</span>
-                    </button>
-                </div>
-            </li>
-        </ul>
+            </div>
 
-        <div class="quiz-actions" *ngIf="preguntas.length > 0">
-            <button class="finish-btn" (click)="finalizarQuiz()">
-                <span class="emoji">✨</span> Finalizar Quiz
-            </button>
+            <div class="button-group">
+                <button 
+                    (click)="guardarPregunta()" 
+                    [disabled]="isAddButtonDisabled()" 
+                    class="btn-primary">
+                    Guardar Pregunta
+                </button>
+                <button 
+                    *ngIf="quiz.questions.length > 0" 
+                    (click)="verPreguntas()" 
+                    class="btn-secondary">
+                    Ver Preguntas ({{ quiz.questions.length }})
+                </button>
+            </div>
+        </div>
+
+        <div class="questions-list" *ngIf="mostrarListado">
+            <h3>Preguntas del Quiz 💝</h3>
+            <div class="question-card" *ngFor="let question of quiz.questions; let i = index">
+                <h4>Pregunta {{ i + 1 }}</h4>
+                <p>{{ question.text }}</p>
+                <ul>
+                    <li *ngFor="let answer of question.answers" [class.correct]="answer.isCorrect">
+                        {{ answer.text }}
+                        <span *ngIf="answer.isCorrect" class="correct-badge">✓</span>
+                    </li>
+                </ul>
+                <div class="button-group">
+                    <button (click)="editarPregunta(i)" class="btn-secondary">Editar</button>
+                    <button (click)="eliminarPregunta(i)" class="btn-danger">Eliminar</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button (click)="noVerPreguntas()" class="btn-secondary">
+                    Añadir Más Preguntas
+                </button>
+                <button 
+                    (click)="finalizarQuiz()" 
+                    [disabled]="quiz.questions.length === 0" 
+                    class="btn-primary">
+                    Finalizar Quiz
+                </button>
+            </div>
+        </div>
+
+        <div class="messages">
+            <div class="error-message" *ngIf="error">{{ error }}</div>
+            <div class="loading-message" *ngIf="isLoading">Guardando quiz...</div>
         </div>
     </div>
 
     <div class="quiz-created" *ngIf="quizCreated">
         <div class="success-card">
-            <h2>🎉 ¡Quiz Creado con Éxito! 🎉</h2>
-            <p>Tu quiz de amor está listo para ser compartido con tu pareja.</p>
+            <h2>💝 ¡Tu Quiz de Amor está Listo! 💝</h2>
+            <p>Has creado un quiz especial para tu pareja. ¡Compártelo con amor!</p>
             
             <div class="share-info">
-                <p>Comparte este enlace con tu pareja para que pueda responder el quiz:</p>
+                <p>Comparte este enlace con tu pareja:</p>
                 <div class="share-link">
-                    <span>answer-test/[ID]</span>
-                    <button class="copy-btn">
+                    <span>answer-test/{{ quiz.id }}</span>
+                    <button class="copy-btn" (click)="copyToClipboard()">
                         <span class="emoji">📋</span> Copiar
                     </button>
                 </div>
@@ -90,7 +154,7 @@
 
             <div class="final-actions">
                 <button class="restart-btn" (click)="reiniciarQuiz()">
-                    <span class="emoji">🔄</span> Crear Nuevo Quiz
+                    <span class="emoji">💕</span> Crear Otro Quiz
                 </button>
             </div>
         </div>

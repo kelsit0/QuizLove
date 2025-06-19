@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "qurJzVsZT+6aXEqfketB5AmiLnhVZZkP+fO/du5H16g=",
+  "Source": "QuizLove.Api",
+  "BasePath": "_content/QuizLove.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
